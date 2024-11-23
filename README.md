@@ -1,5 +1,5 @@
 # Lilly Technical Challenge - Software Engineer Placement Students
-B repository containing the Eli Lilly student developer technical challenge.
+A repository containing the Eli Lilly student developer technical challenge.
 
 **Disclaimer:** All medicines in the fake database (`backend/data.json`) are fictional and do not represent real medicines.
 
