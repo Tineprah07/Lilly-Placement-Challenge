@@ -16,8 +16,4 @@ The **Medicine Tracker** is a full-stack web application designed to manage a da
 - **Backend**: FastAPI
 - **Database**: JSON file for storage
 
-## Instructions
-1. Clone the repository.
-2. Navigate to the backend directory and start the server using:
-   ```bash
-   uvicorn main:app --reload
+
