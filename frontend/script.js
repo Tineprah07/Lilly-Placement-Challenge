@@ -29,10 +29,10 @@ function addMedicine() {
       return response.json();
     })
     .then(data => {
-      alert(data.message);
+      alert(data.message); // Show success message
       nameInput.value = "";
       priceInput.value = "";
-      fetchAndDisplayMedicines();
+      return fetchAndDisplayMedicines(); // Refresh the medicines list
     })
     .catch(error => {
       console.error("Error adding medicine:", error);
@@ -66,9 +66,9 @@ function deleteMedicine() {
       return response.json();
     })
     .then(data => {
-      alert(data.message);
+      alert(data.message); // Show success message
       nameInput.value = "";
-      fetchAndDisplayMedicines();
+      return fetchAndDisplayMedicines(); // Refresh the medicines list
     })
     .catch(error => {
       console.error("Error deleting medicine:", error);
@@ -80,49 +80,48 @@ function deleteMedicine() {
  * Search for a specific medicine.
  */
 function searchMedicine() {
-    const query = document.getElementById("search-bar").value.trim().toLowerCase();
-    const medicinesContainer = document.getElementById("medicines-container");
-  
-    if (!query) {
-      alert("Please enter a medicine name to search.");
-      return;
-    }
-  
-    fetch(`${apiUrl}/medicines/${query}`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(medicine => {
-        medicinesContainer.innerHTML = ""; // Clear current medicines
-  
-        // Create a medicine row matching the .subtopic CSS
-        const medicineRow = document.createElement("div");
-        medicineRow.classList.add("subtopic"); // Apply .subtopic styles
-  
-        // Name Column
-        const nameCol = document.createElement("span");
-        nameCol.textContent = medicine.name;
-  
-        // Price Column
-        const priceCol = document.createElement("span");
-        priceCol.textContent = `$${medicine.price.toFixed(2)}`;
-  
-        // Append columns to the row
-        medicineRow.appendChild(nameCol);
-        medicineRow.appendChild(priceCol);
-  
-        // Append the row to the container
-        medicinesContainer.appendChild(medicineRow);
-      })
-      .catch(error => {
-        console.error("Error searching for medicine:", error);
-        medicinesContainer.innerHTML = "<p>Medicine not found!</p>";
-      });
+  const query = document.getElementById("search-bar").value.trim().toLowerCase();
+  const medicinesContainer = document.getElementById("medicines-container");
+
+  if (!query) {
+    alert("Please enter a medicine name to search.");
+    return;
   }
-  
+
+  fetch(`${apiUrl}/medicines/${query}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(medicine => {
+      medicinesContainer.innerHTML = ""; // Clear current medicines
+
+      // Create a medicine row matching the .subtopic CSS
+      const medicineRow = document.createElement("div");
+      medicineRow.classList.add("subtopic"); // Apply .subtopic styles
+
+      // Name Column
+      const nameCol = document.createElement("span");
+      nameCol.textContent = medicine.name;
+
+      // Price Column
+      const priceCol = document.createElement("span");
+      priceCol.textContent = `$${medicine.price.toFixed(2)}`;
+
+      // Append columns to the row
+      medicineRow.appendChild(nameCol);
+      medicineRow.appendChild(priceCol);
+
+      // Append the row to the container
+      medicinesContainer.appendChild(medicineRow);
+    })
+    .catch(error => {
+      console.error("Error searching for medicine:", error);
+      medicinesContainer.innerHTML = "<p>Medicine not found!</p>";
+    });
+}
 
 /**
  * Update a medicine's price.
@@ -153,30 +152,59 @@ function updateMedicine() {
       return response.json();
     })
     .then(data => {
-      alert(data.message);
+      alert(data.message); // Show success message
       nameInput.value = "";
       priceInput.value = "";
-      fetchAndDisplayMedicines();
+      return fetchAndDisplayMedicines(); // Refresh the medicines list
     })
     .catch(error => {
       console.error("Error updating medicine:", error);
       alert("Failed to update medicine. Please try again.");
     });
 }
-
 /**
- * Create and append a medicine card to the container.
- * @param {HTMLElement} container - The container element.
- * @param {Object} medicine - The medicine object with name and price.
+ * Fetch and display all medicines.
  */
-function createMedicineCard(container, medicine) {
-  const medicineCard = document.createElement("div");
-  medicineCard.classList.add("medicine-card");
-  medicineCard.innerHTML = `
-    <div class="medicine-name">${medicine.name}</div>
-    <div class="medicine-price">$${medicine.price.toFixed(2)}</div>
-  `;
-  container.appendChild(medicineCard);
+function fetchAndDisplayMedicines() {
+    const medicinesContainer = document.getElementById("medicines-container");
+    medicinesContainer.innerHTML = ""; // Clear the current list
+
+    fetch(`${apiUrl}/medicines`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.medicines && data.medicines.length > 0) {
+                data.medicines.forEach(medicine => {
+                    const medicineRow = document.createElement("div");
+                    medicineRow.classList.add("subtopic");
+
+                    // Name Column
+                    const nameCol = document.createElement("span");
+                    nameCol.textContent = medicine.name;
+
+                    // Price Column
+                    const priceCol = document.createElement("span");
+                    priceCol.textContent = `$${medicine.price.toFixed(2)}`;
+
+                    // Append columns to the row
+                    medicineRow.appendChild(nameCol);
+                    medicineRow.appendChild(priceCol);
+
+                    // Append the row to the container
+                    medicinesContainer.appendChild(medicineRow);
+                });
+            } else {
+                medicinesContainer.innerHTML = "<p>No medicines found!</p>";
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching medicines:", error);
+            medicinesContainer.innerHTML = "<p>Failed to load medicines. Please try again later.</p>";
+        });
 }
 
 /**
@@ -184,33 +212,34 @@ function createMedicineCard(container, medicine) {
  */
 function calculateAveragePrice() {
     const averagePriceDisplay = document.getElementById("average-price-display");
-  
+
     fetch(`${apiUrl}/medicines/average`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.average_price) {
-          averagePriceDisplay.textContent = `The average price of medicines is $${data.average_price.toFixed(2)}`;
-        } else if (data.error) {
-          averagePriceDisplay.textContent = `Error: ${data.error}`;
-        }
-      })
-      .catch(error => {
-        console.error("Error calculating average price:", error);
-        averagePriceDisplay.textContent = "Failed to calculate average price. Please try again later.";
-      });
-  }
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.average_price) {
+                averagePriceDisplay.textContent = `The average price of medicines is $${data.average_price.toFixed(2)}`;
+            } else {
+                averagePriceDisplay.textContent = `Error: ${data.error}`;
+            }
+        })
+        .catch(error => {
+            console.error("Error calculating average price:", error);
+            averagePriceDisplay.textContent = "Failed to calculate average price. Please try again later.";
+        });
+}
 
 // Attach event listeners to buttons
+document.getElementById("view-all-button").addEventListener("click", fetchAndDisplayMedicines);
+document.getElementById("calculate-average-button").addEventListener("click", calculateAveragePrice);
 document.getElementById("add-medicine-button").addEventListener("click", addMedicine);
 document.getElementById("delete-medicine-button").addEventListener("click", deleteMedicine);
 document.getElementById("update-medicine-button").addEventListener("click", updateMedicine);
 document.getElementById("search-button").addEventListener("click", searchMedicine);
-document.getElementById("calculate-average-button").addEventListener("click", calculateAveragePrice);
 
 // Automatically fetch and display medicines on page load
 fetchAndDisplayMedicines();
