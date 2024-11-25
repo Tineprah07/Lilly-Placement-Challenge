@@ -1,53 +1,6 @@
 const apiUrl = "http://127.0.0.1:8000"; // Base API URL
 
 /**
- * Fetch and display all medicines in the Available Medicines section.
- */
-function fetchAndDisplayMedicines() {
-    const medicinesContainer = document.getElementById("medicines-container");
-    medicinesContainer.innerHTML = "<p>Loading medicines...</p>"; // Show loading message
-  
-    fetch(`${apiUrl}/medicines`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        medicinesContainer.innerHTML = ""; // Clear loading message
-  
-        if (data.medicines && data.medicines.length > 0) {
-          data.medicines.forEach(medicine => {
-            const medicineRow = document.createElement("div");
-            medicineRow.classList.add("subtopic");
-  
-            // Name Column
-            const nameCol = document.createElement("span");
-            nameCol.textContent = medicine.name;
-  
-            // Price Column
-            const priceCol = document.createElement("span");
-            priceCol.textContent = `$${medicine.price.toFixed(2)}`;
-  
-            // Append columns to the row
-            medicineRow.appendChild(nameCol);
-            medicineRow.appendChild(priceCol);
-  
-            // Append the row to the container
-            medicinesContainer.appendChild(medicineRow);
-          });
-        } else {
-          medicinesContainer.innerHTML = "<p>No medicines found.</p>";
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching medicines:", error);
-        medicinesContainer.innerHTML = "<p>Failed to retrieve medicines. Please try again later.</p>";
-      });
-  }
-
-/**
  * Add a new medicine.
  */
 function addMedicine() {
@@ -226,12 +179,38 @@ function createMedicineCard(container, medicine) {
   container.appendChild(medicineCard);
 }
 
+/**
+ * Fetch and display the average price of medicines.
+ */
+function calculateAveragePrice() {
+    const averagePriceDisplay = document.getElementById("average-price-display");
+  
+    fetch(`${apiUrl}/medicines/average`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.average_price) {
+          averagePriceDisplay.textContent = `The average price of medicines is $${data.average_price.toFixed(2)}`;
+        } else if (data.error) {
+          averagePriceDisplay.textContent = `Error: ${data.error}`;
+        }
+      })
+      .catch(error => {
+        console.error("Error calculating average price:", error);
+        averagePriceDisplay.textContent = "Failed to calculate average price. Please try again later.";
+      });
+  }
+
 // Attach event listeners to buttons
-document.getElementById("view-all-button").addEventListener("click", fetchAndDisplayMedicines);
 document.getElementById("add-medicine-button").addEventListener("click", addMedicine);
 document.getElementById("delete-medicine-button").addEventListener("click", deleteMedicine);
 document.getElementById("update-medicine-button").addEventListener("click", updateMedicine);
 document.getElementById("search-button").addEventListener("click", searchMedicine);
+document.getElementById("calculate-average-button").addEventListener("click", calculateAveragePrice);
 
 // Automatically fetch and display medicines on page load
 fetchAndDisplayMedicines();
