@@ -3,19 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Medicine Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Disclaimer -->
     <div class="disclaimer" id="disclaimer">
         Disclaimer: All medicine names and prices used in this application are fictional and do not represent any real medicine(s).
     </div>
+
+    <!-- Header -->
     <header>
         <h1>Medicine Tracker</h1>
+        <div class="search-section">
+            <input
+                type="text"
+                id="search-bar"
+                placeholder="Search for a medicine..."
+                aria-label="Search for a medicine"
+            />
+            <button id="search-button">Search</button>
+        </div>
     </header>
-    <main>
 
+    <!-- Main -->
+    <main>
+        <!-- Medicines Box -->
+        <section class="medicines-box" id="view-medicines">
+            <div class="action-buttons">
+                <button id="view-all-button">View All Medicines</button>
+            </div>
+            <h2>Available Medicines</h2>
+            <div class="subtopic">
+                <span class="subtopic-name">Medicine Name</span>
+                <span class="subtopic-price">Price</span>
+            </div>
+            <div id="medicines-container">
+                <!-- Medicines will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Operations Box -->
+        <section class="operations-box">
+            <h2>Manage Medicines</h2>
+
+            <!-- Add Medicine Form -->
+            <div class="form-group">
+                <h3>Add New Medicine</h3>
+                <input type="text" id="add-medicine-name" placeholder="Medicine Name" />
+                <input type="number" id="add-medicine-price" placeholder="Price" />
+                <button id="add-medicine-button">Add Medicine</button>
+            </div>
+
+            <!-- Delete Medicine Form -->
+            <div class="form-group">
+                <h3>Delete Medicine</h3>
+                <input type="text" id="delete-medicine-name" placeholder="Medicine Name" />
+                <button id="delete-medicine-button">Delete Medicine</button>
+            </div>
+
+            <!-- Update Medicine Form -->
+            <div class="form-group">
+                <h3>Update Medicine</h3>
+                <input type="text" id="update-medicine-name" placeholder="Medicine Name" />
+                <input type="number" id="update-medicine-price" placeholder="New Price" />
+                <button id="update-medicine-button">Update Medicine</button>
+            </div>
+        </section>
     </main>
+
     <script src="script.js"></script>
 </body>
 </html>

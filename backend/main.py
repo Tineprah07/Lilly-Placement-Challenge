@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Form
+import os
+from fastapi import FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 """
 This module defines a FastAPI application for managing a list of medicines.
 It provides endpoints to retrieve all medicines, retrieve a single medicine by name,
@@ -32,6 +35,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Resolve the absolute path to the frontend directory
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of main.py
+frontend_dir = os.path.join(current_dir, "../frontend")
+
+# Check and mount the frontend directory
+if not os.path.exists(frontend_dir):
+    raise RuntimeError(f"Frontend directory '{frontend_dir}' does not exist!")
+app.mount("/frontend", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
+# Path to the data.json file
+data_file_path = os.path.join(current_dir, "data.json")
+
 @app.get("/medicines")
 def get_all_meds():
     """
@@ -39,9 +54,14 @@ def get_all_meds():
     Returns:
         dict: A dictionary of all medicines
     """
-    with open('data.json') as meds:
+    file_path = os.path.join(current_dir, "data.json")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="data.json file not found")
+
+    with open(file_path, "r") as meds:
         data = json.load(meds)
-    return data
+    return {"medicines": data["medicines"]}
+
 
 @app.get("/medicines/{name}")
 def get_single_med(name: str):
@@ -52,13 +72,17 @@ def get_single_med(name: str):
     Returns:
         dict: A dictionary containing the medicine details
     """
-    with open('data.json') as meds:
+    file_path = os.path.join(current_dir, "data.json")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="data.json file not found")
+
+    with open(file_path, "r") as meds:
         data = json.load(meds)
         for med in data["medicines"]:
-            print(med)
-            if med['name'] == name:
+            if med["name"].lower() == name.lower():
                 return med
-    return {"error": "Medicine not found"}
+    raise HTTPException(status_code=404, detail=f"Medicine '{name}' not found")
+
 
 @app.post("/create")
 def create_med(name: str = Form(...), price: float = Form(...)):
@@ -71,15 +95,24 @@ def create_med(name: str = Form(...), price: float = Form(...)):
     Returns:
         dict: A message confirming the medicine was created successfully.
     """
-    with open('data.json', 'r+') as meds:
+    file_path = os.path.join(current_dir, "data.json")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="data.json file not found")
+
+    with open(file_path, "r+") as meds:
         current_db = json.load(meds)
+        for med in current_db["medicines"]:
+            if med["name"].lower() == name.lower():
+                raise HTTPException(status_code=400, detail=f"Medicine '{name}' already exists")
+
         new_med = {"name": name, "price": price}
         current_db["medicines"].append(new_med)
         meds.seek(0)
         json.dump(current_db, meds)
         meds.truncate()
-        
-    return {"message": f"Medicine created successfully with name: {name}"}
+
+    return {"message": f"Medicine '{name}' created successfully"}
+
 
 @app.post("/update")
 def update_med(name: str = Form(...), price: float = Form(...)):
@@ -92,16 +125,21 @@ def update_med(name: str = Form(...), price: float = Form(...)):
     Returns:
         dict: A message confirming the medicine was updated successfully.
     """
-    with open('data.json', 'r+') as meds:
+    file_path = os.path.join(current_dir, "data.json")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="data.json file not found")
+
+    with open(file_path, "r+") as meds:
         current_db = json.load(meds)
         for med in current_db["medicines"]:
-            if med['name'] == name:
-                med['price'] = price
+            if med["name"].lower() == name.lower():
+                med["price"] = price
                 meds.seek(0)
                 json.dump(current_db, meds)
                 meds.truncate()
-                return {"message": f"Medicine updated successfully with name: {name}"}
-    return {"error": "Medicine not found"}
+                return {"message": f"Medicine '{name}' updated successfully"}
+    raise HTTPException(status_code=404, detail=f"Medicine '{name}' not found")
+
 
 @app.delete("/delete")
 def delete_med(name: str = Form(...)):
@@ -113,16 +151,20 @@ def delete_med(name: str = Form(...)):
     Returns:
         dict: A message confirming the medicine was deleted successfully.
     """
-    with open('data.json', 'r+') as meds:
+    file_path = os.path.join(current_dir, "data.json")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="data.json file not found")
+
+    with open(file_path, "r+") as meds:
         current_db = json.load(meds)
         for med in current_db["medicines"]:
-            if med['name'] == name:
+            if med["name"].lower() == name.lower():
                 current_db["medicines"].remove(med)
                 meds.seek(0)
                 json.dump(current_db, meds)
                 meds.truncate()
-                return {"message": f"Medicine deleted successfully with name: {name}"}
-    return {"error": "Medicine not found"}
+                return {"message": f"Medicine '{name}' deleted successfully"}
+    raise HTTPException(status_code=404, detail=f"Medicine '{name}' not found")
 
 # Add your average function here
 
